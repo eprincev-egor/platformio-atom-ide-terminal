@@ -30,6 +30,7 @@ class PlatformIOTerminalView extends View
         @div class: 'btn-toolbar', =>
           @div class: 'btn-group', =>
             @button outlet: 'inputBtn', class: 'btn icon icon-keyboard', click: 'inputDialog'
+            @button outlet: 'playAutoBtn', class: 'btn icon icon-triangle-right', click: 'playAuto', style: 'display: none'
           @div class: 'btn-group right', =>
             @button outlet: 'hideBtn', class: 'btn icon icon-chevron-down', click: 'hide'
             @button outlet: 'maximizeBtn', class: 'btn icon icon-screen-full', click: 'maximize'
@@ -99,6 +100,10 @@ class PlatformIOTerminalView extends View
 
     @xterm.css 'transition', "height #{0.25 / @animationSpeed}s linear"
 
+  setPlayAutoCommand: (command) ->
+    @playAutoCommand = command
+    @playAutoBtn.show()
+    
   recieveItemOrFile: (event) =>
     event.preventDefault()
     event.stopPropagation()
@@ -528,7 +533,13 @@ class PlatformIOTerminalView extends View
     InputDialog ?= require('./input-dialog')
     dialog = new InputDialog this
     dialog.attach()
-
+  
+  playAuto: ->
+    # input commain in terminal
+    @input @playAutoCommand
+    # and run it command
+    @input "#{os.EOL}"
+    
   rename: ->
     @statusIcon.rename()
 

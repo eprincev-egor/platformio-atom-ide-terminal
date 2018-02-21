@@ -7,6 +7,7 @@ StatusIcon = require './status-icon'
 os = require 'os'
 path = require 'path'
 _ = require 'underscore'
+fs = require('fs')
 
 module.exports =
 class StatusBar extends View
@@ -81,7 +82,7 @@ class StatusBar extends View
             nextTerminal.toggle() if prevTerminal?.panel.isVisible()
 
     @registerContextMenu()
-
+    
     @subscriptions.add atom.tooltips.add @plusBtn, title: 'New Terminal'
     @subscriptions.add atom.tooltips.add @closeBtn, title: 'Close All'
 
@@ -116,6 +117,10 @@ class StatusBar extends View
 
     @attach()
 
+    # read config in project root and add default icons
+    @readDefaultIcons()
+    @renderDefaultIcons()
+
   registerContextMenu: ->
     @subscriptions.add atom.commands.add '.platformio-ide-terminal.status-bar',
       'platformio-ide-terminal:status-red': @setStatusColor
@@ -135,7 +140,42 @@ class StatusBar extends View
         statusIcon.terminalView.hide() if statusIcon.isActive()
       'platformio-ide-terminal:context-rename': (event) ->
         $(event.target).closest('.pio-terminal-status-icon')[0].rename()
-
+  
+  readDefaultIcons: ->
+    @defaultIcons = []
+    
+    root = atom.project.getDirectories()[0].getPath()
+    file = root + '/.platformio-ide-terminal'
+    try
+      stat = fs.statSync(file)
+      if stat.isFile()
+        config = fs.readFileSync(file).toString()
+        config = JSON.parse(config)
+        @defaultIcons = config.defaultIcons.slice()
+      else
+        return
+    catch
+      return
+    
+  renderDefaultIcons: ->
+    for icon in @defaultIcons
+      platformIOTerminalView = @createTerminalView()
+      statusIcon = @statusContainer.children().last()[0]
+      
+      if icon.command
+        platformIOTerminalView.setPlayAutoCommand icon.command
+          
+      if icon.name
+        statusIcon.updateName(icon.name)
+      
+      if icon.color
+        try
+          color = icon.color.match(/\w+$/)[0].toLowerCase().trim()
+          color = atom.config.get("platformio-ide-terminal.iconColors.#{color}").toRGBAString()
+          $(statusIcon).closest('.pio-terminal-status-icon').css 'color', color
+        catch
+          console.log "invalid color #{icon.color}"
+        
   registerPaneSubscription: ->
     @subscriptions.add @paneSubscription = atom.workspace.observePanes (pane) =>
       paneElement = $(atom.views.getView(pane))
