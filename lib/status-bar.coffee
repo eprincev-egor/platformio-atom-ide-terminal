@@ -118,7 +118,7 @@ class StatusBar extends View
     @attach()
 
     # read config in project root and add default icons
-    @readDefaultIcons()
+    @readConfig()
     @renderDefaultIcons()
 
   registerContextMenu: ->
@@ -141,7 +141,7 @@ class StatusBar extends View
       'platformio-ide-terminal:context-rename': (event) ->
         $(event.target).closest('.pio-terminal-status-icon')[0].rename()
   
-  readDefaultIcons: ->
+  readConfig: ->
     @defaultIcons = []
     
     root = atom.project.getDirectories()[0].getPath()
@@ -151,7 +151,12 @@ class StatusBar extends View
       if stat.isFile()
         config = fs.readFileSync(file).toString()
         config = JSON.parse(config)
-        @defaultIcons = config.defaultIcons.slice()
+        
+        if config.icons
+          @defaultIcons = config.icons.slice()
+        
+        if config.defaultIcons
+          @defaultIcons = config.defaultIcons.slice()
       else
         return
     catch
@@ -164,7 +169,10 @@ class StatusBar extends View
       
       if icon.command
         platformIOTerminalView.setPlayCommand icon.command
-          
+      
+      if icon.templates
+        platformIOTerminalView.setTemplates icon.templates
+            
       if icon.name
         statusIcon.updateName(icon.name)
       

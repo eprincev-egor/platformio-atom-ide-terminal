@@ -30,9 +30,15 @@ class PlatformIOTerminalView extends View
         @div class: 'btn-toolbar', =>
           @div class: 'btn-group', =>
             @button outlet: 'inputBtn', class: 'btn icon icon-keyboard', click: 'inputDialog'
-            @button outlet: 'playBtn', class: 'btn icon icon-triangle-right', click: 'play', style: 'display: none'
-            @button outlet: 'restartBtn', class: 'btn icon icon-sync', click: 'restart', style: 'display: none'
-            @button outlet: 'stopBtn', class: 'btn icon icon-primitive-square', click: 'stop', style: 'display: none'
+          
+          @div outlet: 'playGoupDiv', class: 'btn-group', style: 'display: none', =>
+            @button outlet: 'insertPlayCommandBtn', class: 'btn icon icon-terminal', click: 'insertPlayCommand'
+            @button outlet: 'playBtn', class: 'btn icon icon-triangle-right', click: 'play'
+            @button outlet: 'restartBtn', class: 'btn icon icon-sync', click: 'restart'
+            @button outlet: 'stopBtn', class: 'btn icon icon-primitive-square', click: 'stop'
+          
+          @div outlet: 'templatesDiv', class: 'btn-group', click: 'onClickTemplatesDiv', style: 'display: none', =>
+            
           @div class: 'btn-group right', =>
             @button outlet: 'hideBtn', class: 'btn icon icon-chevron-down', click: 'hide'
             @button outlet: 'maximizeBtn', class: 'btn icon icon-screen-full', click: 'maximize'
@@ -104,10 +110,28 @@ class PlatformIOTerminalView extends View
 
   setPlayCommand: (command) ->
     @playCommand = command
-    @playBtn.show()
-    @restartBtn.show()
-    @stopBtn.show()
+    @playGoupDiv.show()
     
+  setTemplates: (templates) ->
+    @templates = templates
+    
+    index = 0
+    for template in templates
+      @templatesDiv.append("<button data-templateIndex=#{index} class='btn'>#{template.name}</button>")
+      index++
+    
+    @templatesDiv.show()
+  
+  onClickTemplatesDiv: (event) ->
+    $btn = $(event.target)
+    templateIndex = +$btn.attr('data-templateIndex')
+    template = @templates[ templateIndex ]
+    
+    if template
+      if template.command
+        @input @playCommand  
+        @focus()
+  
   recieveItemOrFile: (event) =>
     event.preventDefault()
     event.stopPropagation()
@@ -537,6 +561,10 @@ class PlatformIOTerminalView extends View
     InputDialog ?= require('./input-dialog')
     dialog = new InputDialog this
     dialog.attach()
+  
+  insertPlayCommand: ->
+    @input @playCommand  
+    @focus()
   
   play: ->
     # input commain in terminal
