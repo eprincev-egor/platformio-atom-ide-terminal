@@ -129,7 +129,7 @@ class PlatformIOTerminalView extends View
     
     if template
       if template.command
-        @input @playCommand  
+        @input template.command
         @focus()
   
   recieveItemOrFile: (event) =>
