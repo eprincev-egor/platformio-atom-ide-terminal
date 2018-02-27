@@ -131,6 +131,9 @@ class PlatformIOTerminalView extends View
       if template.command
         @input template.command
         @focus()
+        
+        if template.autoRun
+          @input "#{os.EOL}"
   
   recieveItemOrFile: (event) =>
     event.preventDefault()
