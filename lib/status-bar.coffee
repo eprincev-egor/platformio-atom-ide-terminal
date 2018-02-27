@@ -163,7 +163,7 @@ class StatusBar extends View
       statusIcon = @statusContainer.children().last()[0]
       
       if icon.command
-        platformIOTerminalView.setPlayAutoCommand icon.command
+        platformIOTerminalView.setPlayCommand icon.command
           
       if icon.name
         statusIcon.updateName(icon.name)
